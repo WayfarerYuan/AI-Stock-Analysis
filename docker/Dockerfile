@@ -1,7 +1,7 @@
 # ===================================
 # Stage 1: Build Frontend
 # ===================================
-FROM docker1ms.run/node:18-alpine AS frontend-builder
+FROM docker.1ms.run/node:18-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 
