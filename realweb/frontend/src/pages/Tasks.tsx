@@ -7,8 +7,8 @@ import { Progress } from '../components/ui/progress';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { fetchTasks, Task, fetchHistory, AnalysisRecord } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { fetchTasks, Task, fetchHistory, AnalysisRecord } from '../lib/api';
+import { cn } from '../lib/utils';
 
 interface UnifiedTask {
   id: string;

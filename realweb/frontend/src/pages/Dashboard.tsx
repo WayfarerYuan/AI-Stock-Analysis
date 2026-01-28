@@ -2,7 +2,7 @@ import { useState, FormEvent } from 'react';
 import { Search, Sparkles, Bell } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { submitAnalysis } from '@/lib/api';
+import { submitAnalysis } from '../lib/api';
 
 export default function Dashboard() {
   const [inputCode, setInputCode] = useState('');
