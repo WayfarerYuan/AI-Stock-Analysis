@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  realweb:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: stock-realweb
+    restart: unless-stopped
+    ports:
+      - "44443:48000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+      - ./.env:/app/.env
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Shanghai
+      - WEBUI_HOST=0.0.0.0
+      - WEBUI_PORT=48000
