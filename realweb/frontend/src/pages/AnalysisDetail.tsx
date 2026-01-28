@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { ArrowLeft, Share2, Download, AlertTriangle, Target, Activity, ShieldAlert, Crosshair } from 'lucide-react';
+import { ArrowLeft, Share2, Download, AlertTriangle, Activity, ShieldAlert, Crosshair, Target } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
