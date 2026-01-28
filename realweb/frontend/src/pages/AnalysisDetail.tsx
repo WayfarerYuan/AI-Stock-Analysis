@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { ArrowLeft, Share2, Download, AlertTriangle, Target, Activity, Zap, ShieldAlert, TrendingUp, Newspaper, Crosshair } from 'lucide-react';
+import { ArrowLeft, Share2, Download, AlertTriangle, Target, Activity, ShieldAlert, Crosshair } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -45,6 +45,7 @@ interface Dashboard {
       profit_ratio: number;
       avg_cost: number;
       chip_health: string;
+      concentration: number;
     };
   };
   intelligence: {
@@ -95,6 +96,7 @@ interface AIResult {
   key_points: string;
   risk_warning: string;
   buy_reason: string;
+  search_performed?: boolean;
 }
 
 export default function AnalysisDetail() {

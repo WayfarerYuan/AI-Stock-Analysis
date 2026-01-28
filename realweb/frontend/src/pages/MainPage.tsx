@@ -1,4 +1,3 @@
-import React from 'react';
 import Dashboard from './Dashboard';
 import Tasks from './Tasks';
 import Config from './Config';

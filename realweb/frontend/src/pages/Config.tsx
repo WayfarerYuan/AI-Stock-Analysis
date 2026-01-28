@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { fetchStockList, addStock, removeStock } from '../lib/api';
 import { Plus, Trash2, Tag, Info } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 
 export default function Config() {
   const [stocks, setStocks] = useState<string[]>([]);
@@ -21,7 +19,7 @@ export default function Config() {
     setStocks(list);
   };
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const handleAdd = async (e: FormEvent) => {
     e.preventDefault();
     if (!newStock) return;
     

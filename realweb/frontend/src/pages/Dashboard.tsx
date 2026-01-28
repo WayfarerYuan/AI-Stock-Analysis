@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, FormEvent } from 'react';
 import { Search, Sparkles, Bell } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -9,9 +8,8 @@ export default function Dashboard() {
   const [inputCode, setInputCode] = useState('');
   const [enableNotify, setEnableNotify] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!inputCode.trim() || loading) return;
     

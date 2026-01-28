@@ -22,7 +22,7 @@ RUN npm run build
 # ===================================
 # Stage 2: Runtime Environment
 # ===================================
-FROM docker1ms.run/python:3.11-slim
+FROM docker.1ms.run/python:3.11-slim
 
 WORKDIR /app
 

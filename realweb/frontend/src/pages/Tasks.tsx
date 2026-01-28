@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, CheckCircle2, XCircle, Clock, ArrowRight, RefreshCw, TrendingUp, TrendingDown, Search, ChevronLeft, ChevronRight, Settings2, MoreHorizontal } from 'lucide-react';
+import { Play, CheckCircle2, XCircle, Clock, ArrowRight, RefreshCw, Search, ChevronLeft, ChevronRight, Settings2 } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Progress } from '../components/ui/progress';

@@ -1,6 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { LineChart } from 'lucide-react'
-import { cn } from './lib/utils'
 
 // Pages
 import MainPage from './pages/MainPage'
