@@ -136,7 +136,7 @@ class StockAnalysisPipeline:
             logger.error(f"[{code}] {error_msg}")
             return False, error_msg
     
-    def analyze_stock(self, code: str) -> Optional[AnalysisResult]:
+    def analyze_stock(self, code: str, task_id: Optional[str] = None) -> Optional[AnalysisResult]:
         """
         分析单只股票（增强版：含量比、换手率、筹码分析、多维度情报）
         
@@ -150,6 +150,7 @@ class StockAnalysisPipeline:
         
         Args:
             code: 股票代码
+            task_id: 任务ID（可选，用于关联 HTTP 请求）
             
         Returns:
             AnalysisResult 或 None（如果分析失败）
@@ -259,12 +260,76 @@ class StockAnalysisPipeline:
             # Step 7: 调用 AI 分析（传入增强的上下文和新闻）
             result = self.analyzer.analyze(enhanced_context, news_context=news_context)
             
+            # Step 8: 保存分析结果到数据库 (New)
+            if result:
+                self._save_analysis_record(code, result, trend_result, task_id)
+            
             return result
             
         except Exception as e:
             logger.error(f"[{code}] 分析失败: {e}")
             logger.exception(f"[{code}] 详细错误信息:")
             return None
+
+    def _save_analysis_record(
+        self, 
+        code: str, 
+        result: AnalysisResult, 
+        trend_result: Optional[TrendAnalysisResult],
+        task_id: Optional[str] = None
+    ) -> None:
+        """
+        保存分析结果到数据库
+        """
+        try:
+            import json
+            from datetime import date
+            
+            # 使用传入的 task_id，如果没有则生成一个
+            final_task_id = task_id or f"{code}_{date.today().strftime('%Y%m%d')}_{int(time.time())}"
+            
+            # 准备数据
+            # 优先使用技术分析的趋势状态，如果缺失则使用 AI 预测结果
+            final_trend_status = "Unknown"
+            if trend_result:
+                final_trend_status = trend_result.trend_status.value
+            elif result.trend_prediction:
+                final_trend_status = result.trend_prediction
+
+            final_buy_signal = "Unknown"
+            if trend_result:
+                final_buy_signal = trend_result.buy_signal.value
+            elif result.operation_advice:
+                final_buy_signal = result.operation_advice
+
+            # 构建完整的量化数据 JSON
+            # 包含：技术面量化数据 + AI 分析全量数据 (dashboard, 详细分析等)
+            quant_data_dict = {}
+            if trend_result:
+                quant_data_dict.update(trend_result.to_dict())
+            
+            # 将 AI 分析结果也存入 quant_data (作为 ai_result 字段)
+            # 这样前端可以展示更多维度的信息 (如 dashboard, 信心度等)
+            quant_data_dict['ai_result'] = result.to_dict()
+
+            record_data = {
+                'task_id': final_task_id, 
+                'code': code,
+                'date': date.today(),
+                'sentiment_score': result.sentiment_score,
+                'trend_status': final_trend_status,
+                'buy_signal': final_buy_signal,
+                'one_line_summary': getattr(result, 'one_line_summary', result.operation_advice),
+                'analysis_summary': getattr(result, 'analysis_summary', ''),
+                'quant_data': json.dumps(quant_data_dict, ensure_ascii=False)
+            }
+            
+            # 保存
+            self.db.save_analysis_record(record_data)
+            logger.info(f"[{code}] 分析记录已保存到数据库 (TaskID: {final_task_id})")
+            
+        except Exception as e:
+            logger.error(f"[{code}] 保存分析记录失败: {e}")
     
     def _enhance_context(
         self,
@@ -370,7 +435,8 @@ class StockAnalysisPipeline:
         code: str,
         skip_analysis: bool = False,
         single_stock_notify: bool = False,
-        report_type: ReportType = ReportType.SIMPLE
+        report_type: ReportType = ReportType.SIMPLE,
+        task_id: Optional[str] = None
     ) -> Optional[AnalysisResult]:
         """
         处理单只股票的完整流程
@@ -388,6 +454,7 @@ class StockAnalysisPipeline:
             skip_analysis: 是否跳过 AI 分析
             single_stock_notify: 是否启用单股推送模式（每分析完一只立即推送）
             report_type: 报告类型枚举（从配置读取，Issue #119）
+            task_id: 任务ID
 
         Returns:
             AnalysisResult 或 None
@@ -407,7 +474,7 @@ class StockAnalysisPipeline:
                 logger.info(f"[{code}] 跳过 AI 分析（dry-run 模式）")
                 return None
             
-            result = self.analyze_stock(code)
+            result = self.analyze_stock(code, task_id=task_id)
             
             if result:
                 logger.info(

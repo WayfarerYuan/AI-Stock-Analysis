@@ -1,56 +1,77 @@
 # ===================================
-# A股自选股智能分析系统 - Docker 镜像
+# Stage 1: Build Frontend
 # ===================================
-# 基于 Python 3.11 slim 镜像，体积小、启动快
+FROM docker1ms.run/node:18-alpine AS frontend-builder
 
-FROM python:3.11-slim
+WORKDIR /app/frontend
 
-# 设置工作目录
+# Copy frontend source
+COPY realweb/frontend/package.json ./
+COPY realweb/frontend/tsconfig.json ./
+COPY realweb/frontend/tsconfig.node.json ./
+COPY realweb/frontend/vite.config.ts ./
+COPY realweb/frontend/index.html ./
+COPY realweb/frontend/postcss.config.js ./
+COPY realweb/frontend/tailwind.config.js ./
+COPY realweb/frontend/src ./src
+
+# Install and build
+RUN npm install
+RUN npm run build
+
+# ===================================
+# Stage 2: Runtime Environment
+# ===================================
+FROM docker1ms.run/python:3.11-slim
+
 WORKDIR /app
 
-# 设置时区为上海
+# Setup timezone
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 安装系统依赖
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制依赖文件
+# Install Python dependencies
 COPY requirements.txt .
-
-# 安装 Python 依赖
 RUN pip install --no-cache-dir -r requirements.txt
+# Install extra dependencies for RealWeb
+RUN pip install --no-cache-dir fastapi uvicorn
 
-# 复制应用代码
+# Copy application code
 COPY *.py ./
 COPY data_provider/ ./data_provider/
 COPY web/ ./web/
 COPY bot/ ./bot/
 COPY src/ ./src/
+COPY realweb/ ./realweb/
 
-# 创建数据目录
+# Copy built frontend from Stage 1
+COPY --from=frontend-builder /app/frontend/dist /app/realweb/static
+
+# Create data directories
 RUN mkdir -p /app/data /app/logs /app/reports
 
-# 设置环境变量默认值
+# Environment variables
 ENV PYTHONUNBUFFERED=1
 ENV LOG_DIR=/app/logs
 ENV DATABASE_PATH=/app/data/stock_analysis.db
-# WebUI应用
 ENV WEBUI_HOST=0.0.0.0
 ENV WEBUI_PORT=8000
 
-# 暴露 WebUI 端口
+# Expose port
 EXPOSE 8000
 
-# 数据卷（持久化数据）
+# Volumes
 VOLUME ["/app/data", "/app/logs", "/app/reports"]
 
-# 健康检查（支持 WebUI 模式）
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8000/health || python -c "import sys; sys.exit(0)"
+    CMD curl -f http://localhost:8000/api/health || python -c "import sys; sys.exit(0)"
 
-# 默认命令（可被覆盖）
-CMD ["python", "main.py", "--schedule"]
+# Default command (Launch RealWeb)
+CMD ["python", "realweb/launcher.py"]

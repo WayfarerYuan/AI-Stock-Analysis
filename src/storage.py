@@ -31,6 +31,7 @@ from sqlalchemy import (
     select,
     and_,
     desc,
+    func,
 )
 from sqlalchemy.orm import (
     declarative_base,
@@ -117,6 +118,47 @@ class StockDaily(Base):
             'ma20': self.ma20,
             'volume_ratio': self.volume_ratio,
             'data_source': self.data_source,
+        }
+
+
+class AnalysisRecord(Base):
+    """
+    AI 分析记录模型
+    
+    存储 AI 对股票的完整分析结果，包括趋势评分、买卖建议、报告全文等。
+    """
+    __tablename__ = 'analysis_records'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    task_id = Column(String(50), unique=True, index=True) # 关联 TaskService 的任务ID
+    code = Column(String(10), nullable=False, index=True)
+    date = Column(Date, nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.now)
+    
+    # 核心结论
+    sentiment_score = Column(Float)       # 情绪/趋势评分 (0-100)
+    trend_status = Column(String(50))     # 趋势状态 (e.g., BULLISH)
+    buy_signal = Column(String(50))       # 买卖信号 (e.g., BUY, WAIT)
+    one_line_summary = Column(String(500)) # 一句话总结
+    
+    # 完整报告 (Markdown)
+    analysis_summary = Column(String)     # 完整的 AI 分析报告
+    
+    # 量化指标快照 (JSON 字符串，存储 TrendAnalysisResult)
+    quant_data = Column(String)           
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'task_id': self.task_id,
+            'code': self.code,
+            'date': self.date,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'sentiment_score': self.sentiment_score,
+            'trend_status': self.trend_status,
+            'buy_signal': self.buy_signal,
+            'one_line_summary': self.one_line_summary,
+            'analysis_summary': self.analysis_summary,
+            'quant_data': self.quant_data
         }
 
 
@@ -484,6 +526,95 @@ class DatabaseManager:
             return "短期走弱 🔽"
         else:
             return "震荡整理 ↔️"
+
+    def save_analysis_record(self, record_dict: Dict[str, Any]) -> AnalysisRecord:
+        """
+        保存分析记录
+        
+        Args:
+            record_dict: 分析结果字典
+            
+        Returns:
+            保存的记录对象
+        """
+        with self.get_session() as session:
+            try:
+                # 检查是否存在 (按 task_id)
+                task_id = record_dict.get('task_id')
+                existing = session.execute(
+                    select(AnalysisRecord).where(AnalysisRecord.task_id == task_id)
+                ).scalar_one_or_none()
+                
+                if existing:
+                    # 更新
+                    for k, v in record_dict.items():
+                        if hasattr(existing, k) and v is not None:
+                            setattr(existing, k, v)
+                    record = existing
+                else:
+                    # 创建
+                    record = AnalysisRecord(**record_dict)
+                    session.add(record)
+                
+                session.commit()
+                # 刷新以获取 ID
+                session.refresh(record)
+                return record
+            except Exception as e:
+                session.rollback()
+                logger.error(f"保存分析记录失败: {e}")
+                raise
+
+    def get_analysis_history(self, limit: int = 50, offset: int = 0) -> Dict[str, Any]:
+        """
+        获取分析历史记录（带总数）
+        
+        Args:
+            limit: 数量限制
+            offset: 偏移量
+            
+        Returns:
+            Dict: {
+                "total": int,
+                "items": List[AnalysisRecord]
+            }
+        """
+        with self.get_session() as session:
+            # 获取总数
+            total = session.execute(
+                select(func.count(AnalysisRecord.id))
+            ).scalar()
+            
+            # 获取列表
+            results = session.execute(
+                select(AnalysisRecord)
+                .order_by(desc(AnalysisRecord.created_at))
+                .limit(limit)
+                .offset(offset)
+            ).scalars().all()
+            
+            return {
+                "total": total,
+                "items": list(results)
+            }
+
+    def get_analysis_by_id(self, task_id: str) -> Optional[AnalysisRecord]:
+        """
+        根据任务ID获取分析记录
+        
+        Args:
+            task_id: 任务ID
+            
+        Returns:
+            AnalysisRecord 对象或 None
+        """
+        with self.get_session() as session:
+            result = session.execute(
+                select(AnalysisRecord).where(AnalysisRecord.task_id == task_id)
+            ).scalar_one_or_none()
+            
+            return result
+
 
 
 # 便捷函数
