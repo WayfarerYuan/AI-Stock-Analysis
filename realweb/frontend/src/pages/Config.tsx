@@ -1,5 +1,5 @@
 import { useEffect, useState, FormEvent } from 'react';
-import { fetchStockList, addStock, removeStock } from '../../lib/api';
+import { fetchStockList, addStock, removeStock } from '../lib/api';
 import { Plus, Trash2, Tag, Info } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';

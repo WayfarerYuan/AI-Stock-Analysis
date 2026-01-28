@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { fetchAnalysisDetail, AnalysisRecord } from '../../lib/api';
-import { cn } from '../../lib/utils';
+import { fetchAnalysisDetail, AnalysisRecord } from '../lib/api';
+import { cn } from '../lib/utils';
 
 // Interfaces for rich data structure
 interface Dashboard {
