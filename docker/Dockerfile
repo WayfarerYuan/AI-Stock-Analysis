@@ -16,6 +16,7 @@ COPY realweb/frontend/tailwind.config.js ./
 COPY realweb/frontend/src ./src
 
 # Install and build
+RUN npm config set registry https://registry.npmmirror.com
 RUN npm install
 RUN npm run build
 
@@ -30,6 +31,10 @@ WORKDIR /app
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# Change Debian source to Aliyun mirror for faster updates
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
@@ -38,9 +43,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 # Install extra dependencies for RealWeb
-RUN pip install --no-cache-dir fastapi uvicorn
+RUN pip install --no-cache-dir fastapi uvicorn -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Copy application code
 COPY *.py ./
