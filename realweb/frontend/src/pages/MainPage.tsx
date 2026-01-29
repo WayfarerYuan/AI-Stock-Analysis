@@ -5,7 +5,7 @@ import { Separator } from '../components/ui/separator';
 
 export default function MainPage() {
   return (
-    <div className="h-full flex flex-col overflow-hidden gap-6">
+    <div className="space-y-4 md:space-y-6 pb-20 md:pb-0">
       {/* Search and Hero Section */}
       <section id="dashboard-section" className="shrink-0">
         <Dashboard />
@@ -13,13 +13,13 @@ export default function MainPage() {
 
       <Separator className="shrink-0" />
 
-      {/* Tasks and Config Section */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-hidden pb-2">
-        <section id="config-section" className="h-full min-h-0 flex flex-col overflow-hidden">
+      {/* Tasks and Config Section - Stack on mobile, side by side on lg+ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <section id="config-section">
           <Config />
         </section>
 
-        <section id="tasks-section" className="h-full min-h-0 flex flex-col overflow-hidden">
+        <section id="tasks-section">
           <Tasks />
         </section>
       </div>
