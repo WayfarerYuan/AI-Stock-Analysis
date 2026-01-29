@@ -7,8 +7,7 @@ services:
       dockerfile: docker/Dockerfile
     container_name: stock-realweb
     restart: unless-stopped
-    ports:
-      - "44443:48000"
+    network_mode: host
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
