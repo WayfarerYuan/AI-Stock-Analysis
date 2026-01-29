@@ -27,12 +27,14 @@ function Layout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
-        <div className="container max-w-7xl mx-auto py-4 px-4">
-          <Routes>
-            <Route path="/" element={<MainPage />} />
-            <Route path="/analysis/:taskId" element={<AnalysisDetail />} />
-          </Routes>
+      <main className="flex-1 min-h-0 overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          <div className="container max-w-7xl mx-auto py-4 px-4 h-full">
+            <Routes>
+              <Route path="/" element={<MainPage />} />
+              <Route path="/analysis/:taskId" element={<AnalysisDetail />} />
+            </Routes>
+          </div>
         </div>
       </main>
     </div>

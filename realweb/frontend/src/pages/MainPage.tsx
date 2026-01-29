@@ -5,7 +5,7 @@ import { Separator } from '../components/ui/separator';
 
 export default function MainPage() {
   return (
-    <div className="space-y-4 md:space-y-6 pb-20 md:pb-0">
+    <div className="h-full space-y-4 md:space-y-6 pb-20 md:pb-0">
       {/* Search and Hero Section */}
       <section id="dashboard-section" className="shrink-0">
         <Dashboard />
