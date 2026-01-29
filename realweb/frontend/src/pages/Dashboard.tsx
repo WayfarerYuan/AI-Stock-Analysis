@@ -1,12 +1,11 @@
 import { useState, FormEvent } from 'react';
-import { Search, Sparkles, Bell } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { submitAnalysis } from '../lib/api';
 
 export default function Dashboard() {
   const [inputCode, setInputCode] = useState('');
-  const [enableNotify, setEnableNotify] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -19,7 +18,7 @@ export default function Dashboard() {
       const codes = inputCode.split(',').map(c => c.trim()).filter(c => c);
       
       for (const code of codes) {
-        await submitAnalysis(code, 'simple', enableNotify);
+        await submitAnalysis(code, 'simple', false);
       }
       
       // Trigger refresh in Tasks component
@@ -85,18 +84,6 @@ export default function Dashboard() {
           <p className="text-xs text-muted-foreground">
             支持输入多个代码，以逗号分隔
           </p>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors">
-            <input 
-              type="checkbox" 
-              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-              checked={enableNotify}
-              onChange={(e) => setEnableNotify(e.target.checked)}
-            />
-            <span className="flex items-center gap-1.5">
-              <Bell size={14} />
-              启用钉钉通知
-            </span>
-          </label>
         </div>
       </div>
     </div>
